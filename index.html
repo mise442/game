@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>두근두근! 가위바위보 게임 ✊✋✌️</title>
+    <style>
+        /* 게임 화면 꾸미는 스타일이에요! */
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f0f0; /* 배경색 살짝쿵 넣어봤어요! */
+            color: #333;
+        }
+        h1 {
+            color: #333;
+        }
+        #game-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff; /* 하얀색 배경 상자 */
+            border-radius: 10px; /* 모서리 둥글게 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+            display: inline-block; /* 내용만큼만 너비 차지 */
+            min-width: 300px; /* 상자 최소 너비 설정 */
+        }
+        #choices {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            min-height: 3em; /* 선택 결과 자리가 흔들리지 않게 최소 높이 설정 */
+        }
+        #buttons button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin: 0 5px; /* 버튼 간 간격 조정 */
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50; /* 초록색 버튼! */
+            color: white;
+            transition: background-color 0.3s ease; /* 부드러운 색 변화 */
+        }
+        #buttons button:hover {
+            background-color: #45a049; /* 마우스 올리면 색깔 샥! */
+        }
+        #buttons button:active {
+            background-color: #397d3c; /* 클릭하는 순간 색깔 진하게 */
+        }
+         #buttons button:disabled {
+            background-color: #cccccc; /* 비활성화 색상 */
+            cursor: not-allowed; /* 마우스 커서 변경 */
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.6em; /* 결과는 좀 더 크게! */
+            font-weight: bold;
+            min-height: 1.8em; /* 결과 자리가 흔들리지 않게 최소 높이 설정 */
+            color: #333; /* 기본 글자 색 */
+        }
+        #result.win { color: #28a745; } /* 승리 시 초록색 */
+        #result.lose { color: #dc3545; } /* 패배 시 빨간색 */
+        #result.draw { color: #ffc107; } /* 비김 시 주황색 */
+
+
+        #timer {
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e91e63; /* 타이머는 빨간색! */
+        }
+         #timer.time-critical {
+            color: #ff0000; /* 시간이 얼마 안 남았을 때 더 빨갛게 */
+            animation: pulse 1s infinite; /* 깜빡임 효과 */
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1;}
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1;}
+        }
+
+        #restart-button {
+            margin-top: 20px;
+            font-size: 1.2em;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff; /* 파란색 버튼 */
+            color: white;
+             transition: background-color 0.3s ease; /* 부드러운 색 변화 */
+            display: none; /* 처음에는 숨겨놔요 */
+        }
+         #restart-button:hover {
+            background-color: #0056b3;
+         }
+    </style>
+</head>
+<body>
+
+    <h1>두근두근! 가위바위보 게임 ✊✋✌️</h1>
+
+    <div id="game-container">
+        <div id="choices">
+            <p>내 선택: <span id="user-choice">???</span></p>
+            <p>컴퓨터 선택: <span id="computer-choice">???</span></p>
+        </div>
+
+        <div id="buttons">
+            <button id="scissors-btn">가위 ✌️</button>
+            <button id="rock-btn">바위 ✊</button>
+            <button id="paper-btn">보 ✋</button>
+        </div>
+
+        <div id="result">
+            게임 시작!
+        </div>
+
+        <div id="timer">
+            남은 시간: 5초
+        </div>
+
+         <button id="restart-button">다시 하기 👋</button>
+    </div>
+
+    <script>
+        // HTML 요소들을 가져와서 변수에 저장해요.
+        const $userChoice = document.querySelector('#user-choice');
+        const $computerChoice = document.querySelector('#computer-choice');
+        const $result = document.querySelector('#result');
+        const $timer = document.querySelector('#timer');
+        const $buttons = document.querySelectorAll('#buttons button'); // 모든 가위바위보 버튼
+        const $restartButton = document.querySelector('#restart-button'); // 다시 하기 버튼
+
+        let timerId = null; // 타이머 ID를 저장할 변수
+        let timeLeft = 5; // 남은 시간을 저장할 변수 (초)
+        let gameEnded = false; // 게임이 종료되었는지 확인하는 변수
+
+        // 컴퓨터의 가위바위보 선택을 배열로 만들어둬요.
+        const computerChoices = ['rock', 'paper', 'scissors']; // 바위, 보, 가위 순서 (영문 이름)
+
+        // 영문 선택 값을 한글과 이모지로 바꿔주는 함수
+        function getChoiceKorean(choice) {
+            if (choice === 'rock') return '바위 ✊';
+            if (choice === 'paper') return '보 ✋';
+            if (choice === 'scissors') return '가위 ✌️';
+            return '???'; // 알 수 없을 때
+        }
+
+        // 승패를 판정하는 함수예요.
+        function determineWinner(user, computer) {
+            // user와 computer는 'rock', 'paper', 'scissors' 문자열
+            if (user === computer) {
+                $result.classList.remove('win', 'lose');
+                $result.classList.add('draw');
+                return "비겼어요! 🤝";
+            }
+            // 승리 조건: (나: 가위, 컴: 보), (나: 바위, 컴: 가위), (나: 보, 컴: 바위)
+            if ((user === 'scissors' && computer === 'paper') ||
+                (user === 'rock' && computer === 'scissors') ||
+                (user === 'paper' && computer === 'rock')) {
+                $result.classList.remove('lose', 'draw');
+                 $result.classList.add('win');
+                return "승리! 🎉 축하해요!";
+            }
+            // 그 외는 모두 패배
+            $result.classList.remove('win', 'draw');
+            $result.classList.add('lose');
+            return "패배... 😭 아쉬워요!";
+        }
+
+        // 게임을 끝내고 결과를 보여주는 함수예요.
+        // 이 함수는 사용자가 선택했거나 시간이 초과되었을 때 호출됩니다.
+        function endGame(userChoice = null) { // userChoice가 null이면 시간 초과
+            if (gameEnded) return; // 이미 게임이 끝났으면 무시
+
+            clearInterval(timerId); // 타이머 멈춤!
+            gameEnded = true; // 게임 종료 상태로 변경
+
+            // 모든 가위바위보 버튼 비활성화
+            $buttons.forEach(button => button.disabled = true);
+             $timer.classList.remove('time-critical'); // 혹시 남아있을 깜빡임 제거
+
+
+            // 컴퓨터 선택 (랜덤으로 하나 고르기)
+            const computerChoice = computerChoices[Math.floor(Math.random() * computerChoices.length)];
+             $computerChoice.textContent = getChoiceKorean(computerChoice); // 화면에 컴퓨터 선택 표시
+
+
+            let resultMessage = "";
+
+            if (userChoice === null) {
+                // 시간 초과인 경우
+                resultMessage = "시간 초과! 😵 패배...";
+                 $userChoice.textContent = '???'; // 내 선택은 ???
+                 $result.classList.remove('win', 'draw');
+                 $result.classList.add('lose'); // 시간 초과는 패배
+
+            } else {
+                 // 사용자가 시간 안에 선택한 경우
+                 $userChoice.textContent = getChoiceKorean(userChoice); // 화면에 내 선택 표시
+                // 승패 판정
+                resultMessage = determineWinner(userChoice, computerChoice);
+            }
+
+            $result.textContent = `게임 결과: ${resultMessage}`; // 최종 결과 메시지 표시
+
+            $restartButton.style.display = 'block'; // 다시 하기 버튼 보여주기
+        }
+
+        // 사용자가 가위/바위/보 버튼을 클릭했을 때 실행될 함수예요.
+        function handleButtonClick(event) {
+            if (gameEnded || timeLeft <= 0) { // 이미 게임이 끝났거나 시간이 다 되었으면 무시
+                return;
+            }
+
+            // 어떤 버튼을 눌렀는지 확인해서 사용자 선택 값을 가져와요.
+            const userChoice = event.target.id.replace('-btn', ''); // 예: 'scissors-btn' -> 'scissors'
+
+            // 게임 끝내고 결과 보여주기 (사용자 선택 값을 넘겨줌)
+            endGame(userChoice); // 이 함수 안에서 타이머 멈추고, 컴퓨터 선택하고, 판정까지 다 해요!
+        }
+
+        // 타이머가 0이 되었을 때 호출될 함수 (setInterval 안에서 사용)
+        function handleTimeout() {
+             if (!gameEnded) { // 아직 게임이 끝나지 않았으면 (시간 초과)
+                 endGame(null); // 시간 초과로 endGame 호출 (사용자 선택 null)
+             }
+        }
+
+
+        // 타이머를 시작하는 함수예요.
+        function startTimer() {
+            gameEnded = false; // 게임 종료 상태 초기화
+            timeLeft = 5; // 시간 초기화
+            $timer.textContent = `남은 시간: ${timeLeft}초`; // 화면에 시간 표시 업데이트
+            $timer.classList.remove('time-critical'); // 위험 시간 스타일 제거
+             $result.textContent = '게임 시작!'; // 결과 메시지 초기화
+             $result.classList.remove('win', 'lose', 'draw'); // 결과 스타일 초기화
+             $userChoice.textContent = '???'; // 내 선택 초기화
+             $computerChoice.textContent = '???'; // 컴퓨터 선택 초기화
+             $restartButton.style.display = 'none'; // 다시 하기 버튼 숨김
+
+             // 가위바위보 버튼 다시 활성화
+             $buttons.forEach(button => button.disabled = false);
+
+            // 기존 타이머가 있다면 멈추고 새로 시작
+            if (timerId) {
+                clearInterval(timerId);
+            }
+
+            timerId = setInterval(() => {
+                timeLeft--; // 1초 감소
+                $timer.textContent = `남은 시간: ${timeLeft}초`; // 화면 업데이트
+
+                 // 남은 시간이 2초 이하면 빨간색 경고 스타일 적용
+                if (timeLeft <= 2) {
+                    $timer.classList.add('time-critical');
+                }
+
+                if (timeLeft <= 0) {
+                    handleTimeout(); // 시간이 0이 되면 시간 초과 처리 함수 호출
+                }
+            }, 1000); // 1000 밀리초 = 1초마다 실행
+        }
+
+        // 각 가위바위보 버튼에 클릭 이벤트 리스너를 달아줘요.
+        $buttons.forEach(button => {
+            button.addEventListener('click', handleButtonClick);
+        });
+
+        // 다시 하기 버튼에 클릭 이벤트 리스너를 달아줘요.
+         $restartButton.addEventListener('click', startTimer);
+
+        // 페이지 로드 시 게임 바로 시작!
+        startTimer();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+body {
+    font-family: 'Arial', sans-serif; /* 예쁜 글씨체 */
+    display: flex; /* 가운데 정렬을 위해 flex 사용 */
+    justify-content: center; /* 가로 방향 가운데 정렬 */
+    align-items: center; /* 세로 방향 가운데 정렬 */
+    height: 100vh; /* 화면 전체 높이 사용 */
+    margin: 0; /* 기본 마진 없애기 */
+    background-color: #f5f5f5; /* 살짝 회색 배경 */
+}
+
+.container {
+    text-align: center; /* 내용 가운데 정렬 */
+    background-color: #fff; /* 하얀색 배경 */
+    padding: 50px; /* 안쪽 여백 */
+    border-radius: 10px; /* 모서리 둥글게 */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+h1 {
+    color: #333; /* 제목 글씨 색깔 */
+}
+
+.buttons button {
+    font-size: 24px; /* 버튼 글씨 크기 */
+    padding: 10px 20px; /* 버튼 안쪽 여백 */
+    margin: 10px; /* 버튼 바깥 여백 */
+    border: none; /* 테두리 없애기 */
+    border-radius: 5px; /* 버튼 모서리 둥글게 */
+    cursor: pointer; /* 마우스 올리면 손가락 모양 */
+    background-color: #add8e6; /* 연한 파란색 배경 */
+    transition: background-color 0.3s ease; /* 색깔 변할 때 부드럽게 */
+}
+
+.buttons button:hover {
+    background-color: #87cefa; /* 마우스 올리면 좀 더 진한 파란색 */
+}
+
+.result p {
+    font-size: 20px; /* 결과 글씨 크기 */
+    margin-top: 20px; /* 위쪽 여백 */
+    min-height: 30px; /* 결과 텍스트가 들어갈 최소 높이 확보 */
+}
+
+#choices {
+    font-size: 18px; /* 선택 표시 글씨 크기 */
+    color: #555; /* 살짝 흐린 색 */
+    margin-bottom: 10px; /* 아래쪽 여백 */
+}
+
+#message {
+    font-weight: bold; /* 결과 메시지 글씨 두껍게 */
+    color: #007bff; /* 파란색 기본 글씨 */
+}
