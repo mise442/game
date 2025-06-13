@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세계 수도 퀴즈 (하나의 파일)</title>
+
+    <!-- CSS 스타일 시작 -->
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f7fa; /* 연한 하늘색 배경 */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: #fff; /* 하얀색 배경 */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 그림자 효과 강화 */
+            text-align: center;
+            width: 90%;
+            max-width: 550px; /* 최대 너비 설정 */
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #0077cc; /* 파란색 제목 */
+            margin-bottom: 25px;
+        }
+
+        #question-area {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        #question-number {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        #question-text {
+            font-size: 1.4em; /* 문제 텍스트 크기 키움 */
+            font-weight: bold;
+            color: #333;
+            line-height: 1.5; /* 줄 간격 */
+        }
+
+        .options-container {
+            display: grid; /* 그리드 레이아웃 사용 */
+            grid-template-columns: 1fr 1fr; /* 2열로 배치 */
+            gap: 15px; /* 버튼 사이 간격 */
+            margin-bottom: 20px;
+        }
+
+        .option-button {
+            width: 100%;
+            padding: 15px; /* 패딩 키움 */
+            border: 1px solid #ccc;
+            border-radius: 8px; /* 모서리 둥글게 */
+            background-color: #f8f8f8; /* 아주 연한 회색 버튼 */
+            cursor: pointer;
+            font-size: 1.1em; /* 글자 크기 키움 */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            text-align: center;
+        }
+
+        .option-button:hover {
+            background-color: #e0e0e0; /* 호버 시 색상 변경 */
+            border-color: #b0b0b0;
+        }
+
+        .option-button:disabled {
+            opacity: 0.7; /* 비활성화 시 투명도 */
+            cursor: not-allowed;
+        }
+
+        /* 정답/오답 표시를 위한 스타일 */
+        .option-button.correct {
+            background-color: #d4edda; /* 정답은 연한 초록색 */
+            border-color: #28a745;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .option-button.wrong {
+            background-color: #f8d7da; /* 오답은 연한 빨간색 */
+            border-color: #dc3545;
+            color: #721c24;
+            font-weight: bold;
+        }
+
+        #feedback-message {
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 1.5em; /* 메시지 영역 높이 확보 */
+        }
+
+        #feedback-message.correct {
+            color: #28a745; /* 초록색 */
+        }
+
+        #feedback-message.wrong {
+            color: #dc3545; /* 빨간색 */
+        }
+
+        /* 다음 문제 버튼은 이제 사용하지 않으므로 숨김 */
+        #next-button {
+            display: none;
+        }
+    </style>
+    <!-- CSS 스타일 끝 -->
+
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>세계 수도 퀴즈! 🗺️</h1>
+
+        <div id="question-area">
+            <p id="question-number">문제 1</p>
+            <p id="question-text">여기에 문제가 표시됩니다.</p>
+        </div>
+
+        <div id="options-area" class="options-container">
+            <!-- 4개의 선택지 버튼들이 자바스크립트로 여기에 추가될 거예요 -->
+        </div>
+
+        <!-- 정답/오답 메시지가 표시될 곳 -->
+        <div id="feedback-message"></div>
+
+        <!-- 다음 문제 버튼은 이제 자동으로 넘어가니까 필요 없지만, 혹시 몰라 남겨두고 숨길게요 -->
+        <button id="next-button" style="display: none;">다음 문제</button>
+    </div>
+
+    <!-- JavaScript 코드 시작 -->
+    <script>
+        // 세계 수도 퀴즈 문제 데이터 (4지 선다, 4문제)
+        const quizData = [
+            {
+                question: "프랑스의 수도는 어디일까요?",
+                options: ["베를린", "런던", "파리", "로마"],
+                answer: "파리"
+            },
+            {
+                question: "일본의 수도는 어디일까요?",
+                options: ["오사카", "도쿄", "교토", "후쿠오카"],
+                answer: "도쿄"
+            },
+            {
+                question: "중국의 수도는 어디일까요?",
+                options: ["상하이", "베이징", "홍콩", "광저우"],
+                answer: "베이징"
+            },
+            {
+                question: "이탈리아의 수도는 어디일까요?",
+                options: ["밀라노", "피렌체", "베네치아", "로마"],
+                answer: "로마"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        // let score = 0; // 점수 기능은 일단 빼고 다음 문제 넘어가는 것만 구현했어요!
+
+        const questionNumberElement = document.getElementById("question-number");
+        const questionTextElement = document.getElementById("question-text");
+        const optionsAreaElement = document.getElementById("options-area"); // 선택지 버튼들이 들어갈 영역
+        const feedbackMessageElement = document.getElementById("feedback-message"); // 메시지 표시 요소
+
+        // 퀴즈 시작 함수
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            // score = 0;
+            displayQuestion();
+        }
+
+        // 문제 표시 함수
+        function displayQuestion() {
+            // 메시지 초기화
+            feedbackMessageElement.innerText = '';
+            feedbackMessageElement.className = ''; // 클래스 초기화
+
+            // 현재 문제 데이터 가져오기
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            // 문제 번호와 텍스트 업데이트
+            questionNumberElement.innerText = `문제 ${currentQuestionIndex + 1}`;
+            questionTextElement.innerText = currentQuestion.question;
+
+            // 선택지 버튼들 초기화 (이전 문제의 버튼들을 지워줘요)
+            optionsAreaElement.innerHTML = '';
+
+            // 선택지 버튼 생성 및 추가
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement("button"); // <button> 요소를 새로 만들어요
+                button.innerText = option; // 버튼 안에 선택지 텍스트를 넣어요
+                button.classList.add("option-button"); // CSS 스타일을 적용하기 위한 클래스를 추가해요
+                button.addEventListener("click", () => selectAnswer(button, option)); // 버튼 클릭 시 selectAnswer 함수가 실행되도록 이벤트를 달아줘요
+                optionsAreaElement.appendChild(button); // 만든 버튼을 optionsAreaElement 안에 넣어줘서 화면에 보이게 해요
+            });
+        }
+
+        // 선택지 클릭 시 호출되는 함수
+        function selectAnswer(selectedButton, selectedOption) {
+            // 모든 선택지 버튼 비활성화 (답을 하나만 고르게)
+            Array.from(optionsAreaElement.children).forEach(button => {
+                button.disabled = true;
+            });
+
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            // 정답/오답 확인 및 표시
+            if (selectedOption === currentQuestion.answer) {
+                selectedButton.classList.add('correct'); // 정답 스타일 적용
+                feedbackMessageElement.innerText = "정답! 🎉";
+                feedbackMessageElement.classList.add('correct');
+                // score++; // 점수 기능 추가 시
+            } else {
+                selectedButton.classList.add('wrong'); // 오답 스타일 적용
+                feedbackMessageElement.innerText = "아쉽지만 오답! 😅";
+                feedbackMessageElement.classList.add('wrong');
+                // 정답 버튼 찾아서 표시
+                Array.from(optionsAreaElement.children).forEach(button => {
+                    if (button.innerText === currentQuestion.answer) {
+                        button.classList.add('correct');
+                    }
+                });
+            }
+
+            // 2초 후에 다음 문제로 넘어가기
+            setTimeout(nextQuestion, 2000); // 2000 밀리초 = 2초
+        }
+
+        // 다음 문제로 넘어가는 함수
+        function nextQuestion() {
+            currentQuestionIndex++; // 다음 문제로 이동
+
+            if (currentQuestionIndex < quizData.length) {
+                // 다음 문제가 있으면 표시
+                displayQuestion();
+            } else {
+                // 퀴즈 끝!
+                endQuiz();
+            }
+        }
+
+        // 퀴즈 종료 함수
+        function endQuiz() {
+            questionNumberElement.innerText = ""; // 문제 번호 숨김
+            questionTextElement.innerText = "퀴즈 끝! 수고했어요! ✨"; // 종료 메시지
+            optionsAreaElement.innerHTML = ''; // 선택지 모두 지움
+            feedbackMessageElement.innerText = ''; // 메시지 초기화
+
+            // 최종 점수 표시 (점수 기능 추가 시)
+            // questionTextElement.innerText += `\n당신의 점수는 ${score}점 입니다!`;
+
+            // 퀴즈 다시 시작 버튼 추가 (선택 사항)
+            const restartButton = document.createElement("button");
+            restartButton.innerText = "다시 시작";
+            restartButton.style.marginTop = '20px';
+            restartButton.style.padding = '10px 20px';
+            restartButton.style.fontSize = '1em';
+            restartButton.style.cursor = 'pointer';
+            restartButton.style.border = '1px solid #ccc';
+            restartButton.style.borderRadius = '5px';
+            restartButton.style.backgroundColor = '#f0f0f0';
+            restartButton.addEventListener("click", startQuiz);
+            optionsAreaElement.appendChild(restartButton); // optionsAreaElement를 재활용
+        }
+
+        // 페이지 로드 시 퀴즈 시작
+        startQuiz();
+    </script>
+    <!-- JavaScript 코드 끝 -->
+
+</body>
+</html>
